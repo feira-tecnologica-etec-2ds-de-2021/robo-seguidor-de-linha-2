@@ -67,17 +67,17 @@ void printMotorStates() {
 }
 
 void setDirectionToLeft() {
-  digitalWrite(IN1, LOW);
+  digitalWrite(IN1, HIGH);
   digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
+  digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
 }
 
 void setDirectionToRight() {
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
-  digitalWrite(IN1, HIGH);
+  digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, HIGH);
 }
 
 void setDirectionToCenter() {
