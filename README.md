@@ -12,7 +12,7 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 
 - [x] Montagem
 - [x] Seguir circuito
-- [x] Se comunicar por Wifi
+- [ ] Se comunicar por Wifi
 - [ ] Obedecer ao farol
 - [ ] Melhoria de precisão
 
