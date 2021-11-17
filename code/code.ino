@@ -1,15 +1,63 @@
-#define IN1 5
-#define IN2 4
-#define IN3 0
-#define IN4 2
+#include <ESP8266WiFi.h>
+#include <espnow.h>
 
-#define TCRT5000_A 12
-#define TCRT5000_B 13
+// Structure example to receive data
+// Must match the sender structure
+typedef struct struct_message {
+    char a[32];
+    int b;
+    float c;
+    String d;
+    bool e;
+} struct_message;
+
+// Create a struct_message called myData
+struct_message myData;
+
+// Callback function that will be executed when data is received
+void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
+  memcpy(&myData, incomingData, sizeof(myData));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("Char: ");
+  Serial.println(myData.a);
+  Serial.print("Int: ");
+  Serial.println(myData.b);
+  Serial.print("Float: ");
+  Serial.println(myData.c);
+  Serial.print("String: ");
+  Serial.println(myData.d);
+  Serial.print("Bool: ");
+  Serial.println(myData.e);
+  Serial.println();
+}
+
+#define IN1 15
+#define IN2 13
+#define IN3 12
+#define IN4 14
+
+#define TCRT5000_A 5
+#define TCRT5000_B 4
 
 bool sensorA_state = 0;
 bool sensorB_state = 0;
 
 void setup() {
+  WiFi.mode(WIFI_STA);
+
+  // Init ESP-NOW
+  if (esp_now_init() != 0) {
+    Serial.println("Error initializing ESP-NOW");
+    return;
+  }
+  
+  // Once ESPNow is successfully Init, we will register for recv CB to
+  // get recv packer info
+  esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
+  esp_now_register_recv_cb(OnDataRecv);
+
+  
   pinMode(TCRT5000_A, INPUT);
   pinMode(TCRT5000_B, INPUT);
 
@@ -17,7 +65,7 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
-
+  
   Serial.begin(115200);
 }
 
