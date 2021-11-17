@@ -1,22 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-// Structure example to receive data
-// Must match the sender structure
-typedef struct struct_message {
-    int semaphoreState;
-} struct_message;
-
-// Create a struct_message called myData
-struct_message myData;
-
-// Callback function that will be executed when data is received
-void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
-  memcpy(&myData, incomingData, sizeof(myData));
-  Serial.print("Int: ");
-  Serial.println(myData.semaphoreState);
-}
-
 #define IN1 15
 #define IN2 13
 #define IN3 12
@@ -25,10 +9,34 @@ void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
 #define TCRT5000_A 5
 #define TCRT5000_B 4
 
+#define SEMAPHORE_RED 1
+#define SEMAPHORE_YELLOW 2
+#define SEMAPHORE_GREEN 3
+
+// Structure example to receive data
+// Must match the sender structure
+typedef struct struct_message {
+    int state;
+} struct_message;
+
+// Create a struct_message called myData
+struct_message semaphore = {
+  .state = SEMAPHORE_GREEN
+};
+
+// Callback function that will be executed when data is received
+void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
+  memcpy(&semaphore, incomingData, sizeof(semaphore));
+  Serial.print("Semaforo: ");
+  Serial.println(semaphore.state);
+}
+
+
 bool sensorA_state = 0;
 bool sensorB_state = 0;
 
 void setup() {
+  Serial.begin(115200);
   WiFi.mode(WIFI_STA);
 
   // Init ESP-NOW
@@ -41,7 +49,6 @@ void setup() {
   // get recv packer info
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
-
   
   pinMode(TCRT5000_A, INPUT);
   pinMode(TCRT5000_B, INPUT);
@@ -50,8 +57,7 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
-  
-  Serial.begin(115200);
+
 }
 
 void loop() {
@@ -61,16 +67,17 @@ void loop() {
   printSensorStates();
   printMotorStates();
 
-  if (!sensorA_state && !sensorB_state) {
-    stopWheels();
-  } else if (sensorA_state && sensorB_state) {
-    setDirectionToCenter();
-  } else if (!sensorA_state) {
-    setDirectionToLeft();
-  } else if (!sensorB_state) {
-    setDirectionToRight();
+  if (semaphore.state == SEMAPHORE_GREEN  || semaphore.state == SEMAPHORE_YELLOW){
+    moveWheels();
+  } else if (semaphore.state == SEMAPHORE_RED){
+    if (!sensorA_state && !sensorB_state){
+      stopWheels();
+    } else {
+      moveWheels();
+    }
   }
-  delay(50);
+  
+  delay(25);
 }
 
 void printSensorStates() {
@@ -84,18 +91,19 @@ void printSensorStates() {
 void printMotorStates() {
   Serial.println();
   Serial.println("-----MOTORES-----");
-  if (!sensorA_state && !sensorB_state) {
-    Serial.println("Motor A: desligado");
-    Serial.println("Motor B: desligado");
-  } else if (sensorA_state && sensorB_state) {
-    Serial.println("Motor A: ligado");
-    Serial.println("Motor B: ligado");
+  Serial.print("Motor A: ");
+  Serial.println((sensorB_state) ? "ligado" : "desligado");
+  Serial.print("Motor B: ");
+  Serial.println((sensorA_state) ? "ligado" : "desligado");
+}
+
+void moveWheels(){
+  if (sensorA_state && sensorB_state) {
+    setDirectionToCenter();
   } else if (!sensorA_state) {
-    Serial.println("Motor A: ligado");
-    Serial.println("Motor B: desligado");
+    setDirectionToLeft();
   } else if (!sensorB_state) {
-    Serial.println("Motor A: desligado");
-    Serial.println("Motor B: ligado");
+    setDirectionToRight();
   }
 }
 
