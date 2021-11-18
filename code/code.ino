@@ -1,36 +1,35 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define IN1 15
-#define IN2 13
-#define IN3 12
-#define IN4 14
+#define IN1 5
+#define IN2 4
+#define IN3 0
+#define IN4 2
 
-#define TCRT5000_A 5
-#define TCRT5000_B 4
+#define velocity 200
 
-#define SEMAPHORE_RED 1
-#define SEMAPHORE_YELLOW 2
-#define SEMAPHORE_GREEN 3
+#define TCRT5000_A 14
+#define TCRT5000_B 12
+
+#define SEMAPHORE_RED "vermelho"
+#define SEMAPHORE_YELLOW "amarelo"
+#define SEMAPHORE_GREEN "verde"
 
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
-    int state;
+    String state;
 } struct_message;
 
 // Create a struct_message called myData
 struct_message semaphore = {
-  .state = SEMAPHORE_GREEN
+  .state = SEMAPHORE_RED
 };
 
 // Callback function that will be executed when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
   memcpy(&semaphore, incomingData, sizeof(semaphore));
-  Serial.print("Semaforo: ");
-  Serial.println(semaphore.state);
 }
-
 
 bool sensorA_state = 0;
 bool sensorB_state = 0;
@@ -58,14 +57,17 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  digitalWrite(IN1, 255);
+  digitalWrite(IN2, 255);
+  digitalWrite(IN3, 255);
+  digitalWrite(IN4, 255);
 }
 
 void loop() {
   sensorA_state = digitalRead(TCRT5000_A);
   sensorB_state = digitalRead(TCRT5000_B);
 
-  printSensorStates();
-  printMotorStates();
+  showLogs();
 
   if (semaphore.state == SEMAPHORE_GREEN  || semaphore.state == SEMAPHORE_YELLOW){
     moveWheels();
@@ -77,18 +79,19 @@ void loop() {
     }
   }
   
-  delay(25);
+  delay(20);
 }
-
-void printSensorStates() {
+void showLogs(){
+  Serial.println("-----------------------");
+  Serial.println("--------SEMAFORO-------");
+  Serial.print("Semaforo esta ");
+  Serial.println(semaphore.state);
   Serial.println();
   Serial.println("-----SENSORES-----");
-  Serial.print("sensor A: ");
-  Serial.println(sensorA_state);
-  Serial.print("sensor B: ");
-  Serial.println(sensorB_state);
-}
-void printMotorStates() {
+  Serial.print("Sensor A: ");
+  Serial.println((sensorA_state) ? "livre" : "linha");
+  Serial.print("Sensor B: ");
+  Serial.println((sensorB_state) ? "livre" : "linha");
   Serial.println();
   Serial.println("-----MOTORES-----");
   Serial.print("Motor A: ");
@@ -108,29 +111,29 @@ void moveWheels(){
 }
 
 void setDirectionToLeft() {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  analogWrite(IN1, velocity); 
+  analogWrite(IN2, velocity);
+  analogWrite(IN3, 255); 
+  analogWrite(IN4, 255);
 }
 
 void setDirectionToRight() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, HIGH);
+  analogWrite(IN1, 255);
+  analogWrite(IN2, 255);
+  analogWrite(IN3, velocity);
+  analogWrite(IN4, velocity);
 }
 
 void setDirectionToCenter() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  analogWrite(IN1, velocity);
+  analogWrite(IN2, velocity);
+  analogWrite(IN3, velocity); 
+  analogWrite(IN4, velocity);
 }
 
 void stopWheels() {
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, HIGH);
+  analogWrite(IN1, 255);
+  analogWrite(IN2, 255);
+  analogWrite(IN3, 255);
+  analogWrite(IN4, 255);
 }
