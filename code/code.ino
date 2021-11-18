@@ -1,21 +1,26 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-// Structure example to receive data
-// Must match the sender structure
+#define SEMAPHORE_RED "vermelho"
+#define SEMAPHORE_YELLOW "amarelo"
+#define SEMAPHORE_GREEN "verde"
+
 typedef struct struct_message {
-    int semaphoreState;
+    String state;
 } struct_message;
 
-// Create a struct_message called myData
-struct_message myData;
+struct_message semaphore = {
+  .state = SEMAPHORE_RED
+};
 
 // Callback function that will be executed when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
-  memcpy(&myData, incomingData, sizeof(myData));
-  Serial.print("Int: ");
-  Serial.println(myData.semaphoreState);
+  memcpy(&semaphore, incomingData, sizeof(semaphore));
+  Serial.print("Semaforo esta ");
+  Serial.println(semaphore.state);
+  Serial.println();
 }
+
 
 void setup() {
   Serial.begin(115200);
