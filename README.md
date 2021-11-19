@@ -96,6 +96,7 @@ Agradecemos às seguintes pessoas que contribuíram para este projeto:
   </tr>
   <tr>
     <td align="center"><a href="#"><img src="https://avatars.githubusercontent.com/u/3760202?v=4" width="200px;" alt=""/><br/><sub><b>Ana</b></sub></a><br/></td>
+    <td align="center"><a href="#"><img src="https://i.stack.imgur.com/frlIf.png" width="200px;" alt=""/><br/><sub><b>Lucas Wernek</b></sub></a><br/></td>
   </tr>
 </table>
 
