@@ -5,10 +5,10 @@
 #define IN2 4
 #define IN3 0
 #define IN4 2
-#define ENA_ENB 13
+#define ENA_ENB 12
 
 #define TCRT5000_A 14
-#define TCRT5000_B 12
+#define TCRT5000_B 13
 
 #define DUTY_CYCLE 130
 
