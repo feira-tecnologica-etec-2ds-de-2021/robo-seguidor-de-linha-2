@@ -5,49 +5,55 @@
 #define IN2 4
 #define IN3 0
 #define IN4 2
-
-#define velocity 200
+#define ENA_ENB 13
 
 #define TCRT5000_A 14
 #define TCRT5000_B 12
 
-#define SEMAPHORE_RED "vermelho"
-#define SEMAPHORE_YELLOW "amarelo"
-#define SEMAPHORE_GREEN "verde"
+#define DUTY_CYCLE 130
 
-// Structure example to receive data
-// Must match the sender structure
+#define SEMAPHORE_RED 3
+#define SEMAPHORE_YELLOW 2
+#define SEMAPHORE_GREEN 1
+
 typedef struct struct_message {
-    String state;
+  int state;
 } struct_message;
 
-// Create a struct_message called myData
 struct_message semaphore = {
   .state = SEMAPHORE_RED
 };
 
-// Callback function that will be executed when data is received
-void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
-  memcpy(&semaphore, incomingData, sizeof(semaphore));
-}
-
 bool sensorA_state = 0;
 bool sensorB_state = 0;
 
-void setup() {
-  Serial.begin(115200);
+// Callback function that will be executed when data is received
+void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
+  memcpy(&semaphore, incomingData, sizeof(semaphore));
+  Serial.print("Semaforo esta ");
+  Serial.println((semaphore.state == SEMAPHORE_RED) ? "vermelho" : ((semaphore.state == SEMAPHORE_YELLOW) ? "amarelo" : "verde"));
+}
+
+void initESPNOW(){
   WiFi.mode(WIFI_STA);
 
-  // Init ESP-NOW
   if (esp_now_init() != 0) {
     Serial.println("Error initializing ESP-NOW");
     return;
   }
   
-  // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
   esp_now_set_self_role(ESP_NOW_ROLE_SLAVE);
   esp_now_register_recv_cb(OnDataRecv);
+}
+
+void showMACAddress() {
+  Serial.print("ESP8266 Board MAC Address:  ");
+  Serial.println(WiFi.macAddress());
+}
+
+void setup() {
+  Serial.begin(115200);
+  initESPNOW();
   
   pinMode(TCRT5000_A, INPUT);
   pinMode(TCRT5000_B, INPUT);
@@ -56,84 +62,75 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
+  pinMode(ENA_ENB, OUTPUT);
 
-  digitalWrite(IN1, 255);
-  digitalWrite(IN2, 255);
-  digitalWrite(IN3, 255);
-  digitalWrite(IN4, 255);
+  analogWrite(ENA_ENB, DUTY_CYCLE);
 }
 
 void loop() {
   sensorA_state = digitalRead(TCRT5000_A);
   sensorB_state = digitalRead(TCRT5000_B);
 
-  showLogs();
-
-  if (semaphore.state == SEMAPHORE_GREEN  || semaphore.state == SEMAPHORE_YELLOW){
-    moveWheels();
-  } else if (semaphore.state == SEMAPHORE_RED){
-    if (!sensorA_state && !sensorB_state){
-      stopWheels();
-    } else {
-      moveWheels();
-    }
+  if (isSemaphoreClosed() && isOnPedestrianCrossing()){
+    stopMotors();
+  } else if (sensorA_state && sensorB_state) {
+    moveMotors();
+  } else if (!sensorA_state) {
+    moveMotorB();
+  } else if (!sensorB_state) {
+    moveMotorA();
   }
-  
-  delay(20);
+
+  showLogs();
+  delay(500);
 }
+
 void showLogs(){
-  Serial.println("-----------------------");
-  Serial.println("--------SEMAFORO-------");
-  Serial.print("Semaforo esta ");
-  Serial.println(semaphore.state);
-  Serial.println();
   Serial.println("-----SENSORES-----");
   Serial.print("Sensor A: ");
   Serial.println((sensorA_state) ? "livre" : "linha");
   Serial.print("Sensor B: ");
   Serial.println((sensorB_state) ? "livre" : "linha");
-  Serial.println();
   Serial.println("-----MOTORES-----");
   Serial.print("Motor A: ");
-  Serial.println((sensorB_state) ? "ligado" : "desligado");
+  Serial.println((!sensorB_state) ? "ligado" : "desligado");
   Serial.print("Motor B: ");
-  Serial.println((sensorA_state) ? "ligado" : "desligado");
+  Serial.println((!sensorA_state) ? "ligado" : "desligado");
+  Serial.println("\n\n");
 }
 
-void moveWheels(){
-  if (sensorA_state && sensorB_state) {
-    setDirectionToCenter();
-  } else if (!sensorA_state) {
-    setDirectionToLeft();
-  } else if (!sensorB_state) {
-    setDirectionToRight();
-  }
+bool isSemaphoreClosed(){
+  return semaphore.state == SEMAPHORE_RED;
 }
 
-void setDirectionToLeft() {
-  analogWrite(IN1, velocity); 
-  analogWrite(IN2, velocity);
-  analogWrite(IN3, 255); 
-  analogWrite(IN4, 255);
+bool isOnPedestrianCrossing(){
+  return (!sensorA_state && !sensorB_state);
 }
 
-void setDirectionToRight() {
-  analogWrite(IN1, 255);
-  analogWrite(IN2, 255);
-  analogWrite(IN3, velocity);
-  analogWrite(IN4, velocity);
+void moveMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
 }
 
-void setDirectionToCenter() {
-  analogWrite(IN1, velocity);
-  analogWrite(IN2, velocity);
-  analogWrite(IN3, velocity); 
-  analogWrite(IN4, velocity);
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
 }
 
-void stopWheels() {
-  analogWrite(IN1, 255);
-  analogWrite(IN2, 255);
-  analogWrite(IN3, 255);
-  analogWrite(IN4, 255);
+void moveMotorA() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void moveMotorB() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
 }
