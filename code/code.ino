@@ -1,16 +1,15 @@
 #include <ESP8266WiFi.h>
 #include <espnow.h>
 
-#define IN1 5
-#define IN2 4
-#define IN3 0
-#define IN4 2
-#define ENA_ENB 12
+#define IN1 0
+#define IN2 2
+#define IN3 13
+#define IN4 15
+#define ENA 14
+#define ENB 12
 
-#define TCRT5000_A 14
-#define TCRT5000_B 13
-
-#define DUTY_CYCLE 130
+#define TCRT5000_A 5
+#define TCRT5000_B 4
 
 #define SEMAPHORE_RED 3
 #define SEMAPHORE_YELLOW 2
@@ -26,6 +25,9 @@ struct_message semaphore = {
 
 bool sensorA_state = 0;
 bool sensorB_state = 0;
+byte baseDutyCycle = 140;
+byte diferenceDutyCycle = 0;
+
 
 // Callback function that will be executed when data is received
 void OnDataRecv(uint8_t * mac, uint8_t *incomingData, uint8_t len) {
@@ -62,9 +64,13 @@ void setup() {
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
-  pinMode(ENA_ENB, OUTPUT);
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);
 
-  analogWrite(ENA_ENB, DUTY_CYCLE);
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
 }
 
 void loop() {
@@ -73,29 +79,30 @@ void loop() {
 
   if (isSemaphoreClosed() && isOnPedestrianCrossing()){
     stopMotors();
-  } else if (sensorA_state && sensorB_state) {
+    delay(300);
+  } else if (!sensorA_state && !sensorB_state) {
     moveMotors();
-  } else if (!sensorA_state) {
+  } else if (sensorA_state) {
     moveMotorB();
-  } else if (!sensorB_state) {
+  } else if (sensorB_state) {
     moveMotorA();
   }
 
-  showLogs();
-  delay(500);
+  //showLogs();
+  delayMicroseconds(1000);
 }
 
 void showLogs(){
   Serial.println("-----SENSORES-----");
   Serial.print("Sensor A: ");
-  Serial.println((sensorA_state) ? "livre" : "linha");
+  Serial.println((!sensorA_state) ? "livre" : "linha");
   Serial.print("Sensor B: ");
-  Serial.println((sensorB_state) ? "livre" : "linha");
+  Serial.println((!sensorB_state) ? "livre" : "linha");
   Serial.println("-----MOTORES-----");
   Serial.print("Motor A: ");
-  Serial.println((!sensorB_state) ? "ligado" : "desligado");
+  Serial.println((sensorB_state) ? "ligado" : "desligado");
   Serial.print("Motor B: ");
-  Serial.println((!sensorA_state) ? "ligado" : "desligado");
+  Serial.println((sensorA_state) ? "ligado" : "desligado");
   Serial.println("\n\n");
 }
 
@@ -104,33 +111,26 @@ bool isSemaphoreClosed(){
 }
 
 bool isOnPedestrianCrossing(){
-  return (!sensorA_state && !sensorB_state);
+  return (sensorA_state && sensorB_state);
 }
 
 void moveMotors() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  setDutyCycleTo(baseDutyCycle, baseDutyCycle);
 }
 
 void stopMotors() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
+  setDutyCycleTo(0, 0);
 }
 
 void moveMotorA() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
+  setDutyCycleTo(baseDutyCycle, diferenceDutyCycle);
 }
 
 void moveMotorB() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+  setDutyCycleTo(diferenceDutyCycle, baseDutyCycle);
+}
+
+void setDutyCycleTo(byte dutyCycleA, byte dutyCycleB){
+  analogWrite(ENA, dutyCycleA);
+  analogWrite(ENB, dutyCycleB);
 }
