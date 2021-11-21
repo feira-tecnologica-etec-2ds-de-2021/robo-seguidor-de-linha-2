@@ -14,7 +14,7 @@ O projeto ainda está em desenvolvimento e as próximas atualizações serão vo
 - [x] Seguir circuito
 - [x] Se comunicar por Wifi
 - [x] Obedecer ao farol
-- [ ] Melhoria de precisão
+- [x] Melhoria de precisão
 
 ## 📦 Materiais
 
