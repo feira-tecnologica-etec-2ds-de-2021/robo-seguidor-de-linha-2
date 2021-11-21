@@ -25,7 +25,7 @@ struct_message semaphore = {
 
 bool sensorA_state = 0;
 bool sensorB_state = 0;
-byte baseDutyCycle = 140;
+byte baseDutyCycle = 110;
 byte diferenceDutyCycle = 0;
 
 
@@ -79,17 +79,18 @@ void loop() {
 
   if (isSemaphoreClosed() && isOnPedestrianCrossing()){
     stopMotors();
-    delay(300);
-  } else if (!sensorA_state && !sensorB_state) {
-    moveMotors();
-  } else if (sensorA_state) {
-    moveMotorB();
-  } else if (sensorB_state) {
-    moveMotorA();
+  } else {
+    if ((sensorA_state && sensorB_state) || (!sensorA_state && !sensorB_state)) {
+      moveMotors();
+    } else if (sensorA_state) {
+      moveMotorB();
+    } else if (sensorB_state) {
+      moveMotorA();
+    }
   }
 
   //showLogs();
-  delayMicroseconds(1000);
+  delay(1);
 }
 
 void showLogs(){
@@ -123,11 +124,11 @@ void stopMotors() {
 }
 
 void moveMotorA() {
-  setDutyCycleTo(baseDutyCycle, diferenceDutyCycle);
+  setDutyCycleTo(baseDutyCycle - 15, diferenceDutyCycle);
 }
 
 void moveMotorB() {
-  setDutyCycleTo(diferenceDutyCycle, baseDutyCycle);
+  setDutyCycleTo(diferenceDutyCycle, baseDutyCycle - 15);
 }
 
 void setDutyCycleTo(byte dutyCycleA, byte dutyCycleB){
