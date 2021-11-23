@@ -46,6 +46,14 @@ Este são os materiais necessarios para montagem do projeto:
         </p>
       </a>
     </td>
+    <td align="center">
+      <a href="#">
+        <img src="https://www.robotshop.com/media/catalog/product/cache/image/1350x/9df78eab33525d08d6e5fb8d27136e95/t/a/tamiya-mini-power-switch-2pk.jpg" width="100px;" alt="interruptor paralelo duplo pequeno"/><br>
+        <p>
+          <b>interruptor paralelo duplo pequeno</b>
+        </p>
+      </a>
+    </td>
    </tr>
    <tr>
     <td align="center">
@@ -68,7 +76,15 @@ Este são os materiais necessarios para montagem do projeto:
       <a href="#">
         <img src="https://github.com/feira-tecnologica-etec-2ds-de-2021/robo-seguidor-de-linha-matinho/blob/main/assets/readme/battery.jpg?raw=true" width="100px;" alt="Bateria"/><br>
         <p>
-          <b>1x Bateria (5v~35v)</b>
+          <b>1x Bateria (5v~35v) (alimentação dos motores)</b>
+        </p>
+      </a>
+    </td>
+     <td align="center">
+      <a href="#">
+        <img src="https://cdn.awsli.com.br/300x300/996/996434/produto/99473568/a959759dee.jpg" width="100px;" alt="Bateria"/><br>
+        <p>
+          <b>1x Pack 4 Pilhas (5v~6v) (alimentação do ESP)</b>
         </p>
       </a>
     </td>
