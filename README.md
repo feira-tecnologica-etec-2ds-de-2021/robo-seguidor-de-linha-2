@@ -93,7 +93,7 @@ Este são os materiais necessarios para montagem do projeto:
 
 ## ⚙🗺 Circuito
 
-<img src="https://www.pge.rs.gov.br/themes/modelo-noticias/images/outros/MD_imgSemImagem.png"/>
+<img src="https://github.com/feira-tecnologica-etec-2ds-de-2021/robo-seguidor-de-linha-matinho/blob/main/assets/readme/circuito%20carro%202.png"/>
 
 ## 🤝 Colaboradores
 
