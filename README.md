@@ -6,16 +6,6 @@
 
 > Esse carro <strong>segue uma linha em circuito pré-definido, se comunicando com um farol</strong>. Ele segue o circuito e obedece o semaforo, continuando, ou parando no farol, assim como um carro autônomo.
 
-## 📆 Ajustes e melhorias
-
-O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas nas seguintes tarefas:
-
-- [x] Montagem
-- [x] Seguir circuito
-- [x] Se comunicar por Wifi
-- [x] Obedecer ao farol
-- [x] Melhoria de precisão
-
 ## 📦 Materiais
 
 Este são os materiais necessarios para montagem do projeto:
